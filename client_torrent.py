@@ -10,7 +10,7 @@ def main():
     ses.listen_on(6881, 6891)
 
     params = {
-        'save_path': '/home/staval/Desktop/TBSDA/Lab_3/Download/',
+        'save_path': 'Downloads/',
         'storage_mode': lt.storage_mode_t(2)
     }
 
