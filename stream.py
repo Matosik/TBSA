@@ -1,28 +1,47 @@
-from flask import Flask, render_template, Response
+# stream.py
 import cv2
+import requests
+import time
 
-app = Flask(__name__)
+# Адрес сервера (измените на IP вашего сервера в локальной сети)
+SERVER_URL = "http://<SERVER_IP>:5000"  # <-- замените <SERVER_IP> на реальный IP
+UPLOAD_ENDPOINT = SERVER_URL + "/upload"
 
-camera = cv2.VideoCapture(0)
+def main():
+    cap = cv2.VideoCapture(0)  # 0 — системная веб-камера
+    if not cap.isOpened():
+        print("Не удалось открыть камеру.")
+        return
 
-def gen_frames():
-    while True:
-        success, frame = camera.read()
-        if not success:
-            break
-        else:
-            ret, buffer = cv2.imencode('.jpg', frame)
-            frame = buffer.tobytes()
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+    try:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                print("Кадр не получен, повтор...")
+                time.sleep(0.1)
+                continue
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+            # Кодируем кадр в JPEG
+            ret2, buf = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+            if not ret2:
+                continue
 
-@app.route('/video_feed')
-def video_feed():
-    return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+            # Отправляем как multipart/form-data поле 'frame'
+            files = {'frame': ('frame.jpg', buf.tobytes(), 'image/jpeg')}
+            try:
+                resp = requests.post(UPLOAD_ENDPOINT, files=files, timeout=1.0)
+                # опционально: печатаем статус раз в N кадров
+                # print(resp.status_code, resp.text)
+            except requests.RequestException as e:
+                print("Ошибка отправки кадра:", e)
+                time.sleep(0.5)
 
-if __name__ == "__main__":
-    app.run(debug=True)
+            # Небольшая задержка, чтобы не перегружать сеть/камеру
+            time.sleep(0.05)
+    except KeyboardInterrupt:
+        print("Остановка захвата.")
+    finally:
+        cap.release()
+
+if __name__ == '__main__':
+    main()

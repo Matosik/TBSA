@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <title>Просмотр обработанного потока</title>
+  <style>
+    body { font-family: Arial, sans-serif; display:flex; align-items:center; justify-content:center; height:100vh; margin:0; background:#f4f4f4; }
+    .container { text-align:center; }
+    img { max-width:90vw; max-height:80vh; border:1px solid #ccc; background:#000; }
+    h1 { font-size:18px; margin-bottom:10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Обработанный поток (MJPEG)</h1>
+    <p>Если поток не показывает — проверьте, что запущены <code>server.py</code> и <code>stream.py</code>.</p>
+    <img id="video" src="/video_feed" alt="Video stream" />
+  </div>
+</body>
+</html>
